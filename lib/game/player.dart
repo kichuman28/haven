@@ -3,12 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 class Player extends PositionComponent {
-  Player() : super(size: Vector2(50, 50));
+  Player() : super(size: Vector2(40, 50));
 
   // Movement speed in pixels per second
   final double _speed = 300.0;
   final Vector2 _velocity = Vector2.zero();
   bool _hasInput = false;
+  bool _shieldActive = false;
 
   @override
   Future<void> onLoad() async {
@@ -25,15 +26,76 @@ class Player extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    canvas.drawRect(
-      size.toRect(),
-      Paint()..color = Colors.blue,
+    // Save the current canvas state
+    canvas.save();
+    
+    // Move to center of the component
+    canvas.translate(size.x / 2, size.y / 2);
+    
+    // Draw shield if active
+    if (_shieldActive) {
+      final Paint shieldPaint = Paint()
+        ..color = Colors.blue.withOpacity(0.3)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset.zero, 30, shieldPaint);
+      
+      final Paint shieldBorderPaint = Paint()
+        ..color = Colors.blue.withOpacity(0.7)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2;
+      canvas.drawCircle(Offset.zero, 30, shieldBorderPaint);
+    }
+    
+    // Draw the head
+    final Paint headPaint = Paint()
+      ..color = Colors.pink[300]!
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(0, -10), 10, headPaint);
+    
+    // Draw the body
+    final Paint bodyPaint = Paint()
+      ..color = Colors.blue[700]!
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+    
+    // Body line
+    canvas.drawLine(
+      Offset(0, 0),
+      Offset(0, 15),
+      bodyPaint,
     );
+    
+    // Arms
+    canvas.drawLine(
+      Offset(-12, 5),
+      Offset(12, 5),
+      bodyPaint,
+    );
+    
+    // Legs
+    canvas.drawLine(
+      Offset(0, 15),
+      Offset(-8, 25),
+      bodyPaint,
+    );
+    canvas.drawLine(
+      Offset(0, 15),
+      Offset(8, 25),
+      bodyPaint,
+    );
+    
+    // Restore the canvas state
+    canvas.restore();
   }
 
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     _velocity.setZero();
     _hasInput = false;
+
+    // Toggle shield with spacebar
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
+      _shieldActive = !_shieldActive;
+    }
 
     // Handle movement based on pressed keys
     if (keysPressed.contains(LogicalKeyboardKey.keyW) || 

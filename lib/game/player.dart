@@ -183,11 +183,17 @@ class Player extends PositionComponent {
       _hasInput = true;
     }
 
+    // Normalize diagonal movement
     if (_hasInput && _velocity.length > _speed) {
       _velocity.normalize();
       _velocity.scale(_speed);
     }
 
     return true;
+  }
+
+  void stopMovement() {
+    _velocity.setZero();
+    _hasInput = false;
   }
 } 

@@ -4,13 +4,21 @@ import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'player.dart';
+import 'environment.dart';
 
 class HavenGame extends FlameGame with KeyboardEvents {
   late final Player player;
+  late final PostApocalypticEnvironment environment;
+
+  @override
+  Color backgroundColor() => const Color(0xFF0A0A0A);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    
+    environment = PostApocalypticEnvironment();
+    add(environment);
     
     player = Player()
       ..position = Vector2(

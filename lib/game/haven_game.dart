@@ -6,11 +6,16 @@ import 'package:flutter/services.dart';
 import 'player.dart';
 import 'world_manager.dart';
 import 'ui_overlay.dart';
+import 'managers/memory_manager.dart';
+import 'components/memory_fragment.dart';
+import 'components/fragment_progress.dart';
 
-class HavenGame extends FlameGame with KeyboardEvents {
+class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
   late final WorldManager worldManager;
   late final UIOverlay uiOverlay;
+  late final MemoryManager memoryManager;
+  late final FragmentProgress fragmentProgress;
   
   // World position tracking
   Vector2 worldPosition = Vector2.zero();
@@ -27,8 +32,16 @@ class HavenGame extends FlameGame with KeyboardEvents {
   Future<void> onLoad() async {
     await super.onLoad();
     
+    // Initialize managers
     worldManager = WorldManager();
     add(worldManager);
+    
+    memoryManager = MemoryManager();
+    add(memoryManager);
+    
+    // Add fragment progress indicator
+    fragmentProgress = FragmentProgress(memoryManager);
+    add(fragmentProgress);
     
     player = Player()
       ..position = Vector2(
@@ -40,66 +53,11 @@ class HavenGame extends FlameGame with KeyboardEvents {
 
     // Initialize UI overlay
     uiOverlay = UIOverlay(worldPosition);
-    uiOverlay.addDiscoveredScreen(worldPosition); // Add starting screen
+    uiOverlay.addDiscoveredScreen(worldPosition);
     add(uiOverlay);
-  }
 
-  @override
-  KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    if (!isTransitioning) {
-      player.onKeyEvent(event, keysPressed);
-    }
-    return KeyEventResult.handled;
-  }
-
-  void startTransition(Vector2 direction) {
-    if (isTransitioning) return;
-    
-    // Check if the next screen would be within bounds
-    final nextPosition = worldPosition + direction;
-    if (!worldManager.isValidPosition(nextPosition)) {
-      // If not valid, just reset player position away from the boundary
-      if (player.position.x < 0) {
-        player.position.x = 0;
-      } else if (player.position.x > size.x) {
-        player.position.x = size.x;
-      } else if (player.position.y < 0) {
-        player.position.y = 0;
-      } else if (player.position.y > size.y) {
-        player.position.y = size.y;
-      }
-      player.stopMovement();
-      return;
-    }
-    
-    isTransitioning = true;
-    fadeIn = true;
-    transitionAlpha = 0;
-    player.stopMovement(); // Stop player movement during transition
-    
-    // Update world position based on direction
-    worldPosition = nextPosition;
-    worldManager.moveToScreen(worldPosition);
-    uiOverlay.updatePosition(worldPosition); // Update UI with new position
-    uiOverlay.addDiscoveredScreen(worldPosition); // Add new screen to discovered list
-  }
-
-  void resetPlayerPosition(Vector2 newPosition) {
-    player.position = newPosition;
-    player.stopMovement(); // Ensure player stops after repositioning
-  }
-
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-    
-    // Draw transition overlay
-    if (isTransitioning) {
-      canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.x, size.y),
-        Paint()..color = Colors.black.withOpacity(transitionAlpha),
-      );
-    }
+    // Spawn initial fragments for starting screen
+    memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
   }
 
   @override
@@ -107,6 +65,15 @@ class HavenGame extends FlameGame with KeyboardEvents {
     super.update(dt);
     
     if (!isTransitioning) {
+      // Check for fragment collection
+      final fragments = children.whereType<MemoryFragment>();
+      for (final fragment in fragments) {
+        if (!fragment.isCollected && 
+            player.position.distanceTo(fragment.position) < 30) {
+          memoryManager.collectFragment(fragment);
+        }
+      }
+
       // Check for screen transitions
       if (player.position.x < 0) {
         startTransition(Vector2(-1, 0));
@@ -141,8 +108,81 @@ class HavenGame extends FlameGame with KeyboardEvents {
         if (transitionAlpha <= 0) {
           transitionAlpha = 0;
           isTransitioning = false;
+          // Spawn fragments for new screen only after transition is complete
+          memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
         }
       }
+    }
+  }
+
+  @override
+  KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    if (!isTransitioning) {
+      // Handle dialog dismissal
+      if (event is KeyDownEvent && 
+          event.logicalKey == LogicalKeyboardKey.space && 
+          memoryManager.activeDialog != null) {
+        memoryManager.hideDialog();
+        return KeyEventResult.handled;
+      }
+      player.onKeyEvent(event, keysPressed);
+    }
+    return KeyEventResult.handled;
+  }
+
+  void startTransition(Vector2 direction) {
+    if (isTransitioning) return;
+    
+    // Check if the next screen would be within bounds
+    final nextPosition = worldPosition + direction;
+    if (!worldManager.isValidPosition(nextPosition)) {
+      // If not valid, just reset player position away from the boundary
+      if (player.position.x < 0) {
+        player.position.x = 0;
+      } else if (player.position.x > size.x) {
+        player.position.x = size.x;
+      } else if (player.position.y < 0) {
+        player.position.y = 0;
+      } else if (player.position.y > size.y) {
+        player.position.y = size.y;
+      }
+      player.stopMovement();
+      return;
+    }
+    
+    isTransitioning = true;
+    fadeIn = true;
+    transitionAlpha = 0;
+    player.stopMovement();
+    
+    // Remove all existing fragments before transition
+    final existingFragments = children.whereType<MemoryFragment>().toList();
+    for (final fragment in existingFragments) {
+      fragment.removeFromParent();
+    }
+    
+    // Update world position based on direction
+    worldPosition = nextPosition;
+    worldManager.moveToScreen(worldPosition);
+    uiOverlay.updatePosition(worldPosition);
+    uiOverlay.addDiscoveredScreen(worldPosition);
+  }
+
+  void resetPlayerPosition(Vector2 newPosition) {
+    player.position = newPosition;
+    player.stopMovement();
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    
+    // Draw transition overlay
+    if (isTransitioning) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = Colors.black.withOpacity(transitionAlpha),
+      );
     }
   }
 } 

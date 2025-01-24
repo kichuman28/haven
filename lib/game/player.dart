@@ -10,6 +10,13 @@ class Player extends PositionComponent {
   final Vector2 _velocity = Vector2.zero();
   bool _hasInput = false;
   bool _shieldActive = false;
+  
+  // Bubble protection mechanics
+  static const double maxBubbleDuration = 10.0; // seconds
+  static const double bubbleCooldown = 15.0; // seconds
+  double _bubbleTimeRemaining = maxBubbleDuration;
+  double _cooldownTimeRemaining = 0.0;
+  bool _isCoolingDown = false;
 
   @override
   Future<void> onLoad() async {
@@ -21,6 +28,26 @@ class Player extends PositionComponent {
     super.update(dt);
     if (_hasInput) {
       position += _velocity * dt;
+    }
+
+    // Update bubble protection timer
+    if (_shieldActive) {
+      _bubbleTimeRemaining -= dt;
+      if (_bubbleTimeRemaining <= 0) {
+        _shieldActive = false;
+        _bubbleTimeRemaining = 0;
+        _isCoolingDown = true;
+        _cooldownTimeRemaining = bubbleCooldown;
+      }
+    }
+
+    // Update cooldown timer
+    if (_isCoolingDown) {
+      _cooldownTimeRemaining -= dt;
+      if (_cooldownTimeRemaining <= 0) {
+        _isCoolingDown = false;
+        _bubbleTimeRemaining = maxBubbleDuration;
+      }
     }
   }
 
@@ -44,6 +71,40 @@ class Player extends PositionComponent {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
       canvas.drawCircle(Offset.zero, 30, shieldBorderPaint);
+    }
+
+    // Always draw the bubble timer when there's time remaining
+    if (_bubbleTimeRemaining > 0) {
+      final Paint timerPaint = Paint()
+        ..color = _shieldActive ? Colors.blue : Colors.blue.withOpacity(0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      
+      final double timerAngle = (_bubbleTimeRemaining / maxBubbleDuration) * 2 * 3.14159;
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset.zero, radius: 35),
+        -1.57079633, // Start from top (-90 degrees)
+        timerAngle,
+        false,
+        timerPaint,
+      );
+    }
+
+    // Draw cooldown indicator if cooling down
+    if (_isCoolingDown) {
+      final Paint cooldownPaint = Paint()
+        ..color = Colors.red.withOpacity(0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2;
+      
+      final double cooldownAngle = (_cooldownTimeRemaining / bubbleCooldown) * 2 * 3.14159;
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset.zero, radius: 40),
+        -1.57079633,
+        cooldownAngle,
+        false,
+        cooldownPaint,
+      );
     }
     
     // Draw the head
@@ -92,9 +153,12 @@ class Player extends PositionComponent {
     _velocity.setZero();
     _hasInput = false;
 
-    // Toggle shield with spacebar
-    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
-      _shieldActive = !_shieldActive;
+    // Toggle shield with spacebar if not cooling down and has time remaining
+    if (event is KeyDownEvent && 
+        event.logicalKey == LogicalKeyboardKey.space && 
+        !_isCoolingDown && 
+        _bubbleTimeRemaining > 0) {
+      _shieldActive = !_shieldActive;  // Toggle the shield state
     }
 
     // Handle movement based on pressed keys

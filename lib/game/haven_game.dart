@@ -9,6 +9,7 @@ import 'ui_overlay.dart';
 import 'managers/memory_manager.dart';
 import 'components/memory_fragment.dart';
 import 'components/fragment_progress.dart';
+import 'components/ending_sequence.dart';
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
@@ -16,12 +17,14 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final UIOverlay uiOverlay;
   late final MemoryManager memoryManager;
   late final FragmentProgress fragmentProgress;
+  late final EndingSequence endingSequence;
   
   // World position tracking
   Vector2 worldPosition = Vector2.zero();
   bool isTransitioning = false;
   double transitionAlpha = 0;
   bool fadeIn = false;
+  bool isEndingActive = false;
   
   static const transitionDuration = 0.5; // seconds
   
@@ -42,6 +45,10 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Add fragment progress indicator
     fragmentProgress = FragmentProgress(memoryManager);
     add(fragmentProgress);
+    
+    // Initialize ending sequence
+    endingSequence = EndingSequence(memoryManager);
+    add(endingSequence);
     
     player = Player()
       ..position = Vector2(
@@ -64,7 +71,16 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   void update(double dt) {
     super.update(dt);
     
+    if (isEndingActive) return;
+    
     if (!isTransitioning) {
+      // Check if player has reached the end point with all fragments
+      if (worldPosition.x == 2 && worldPosition.y == 4 && 
+          memoryManager.hasCollectedAllFragments) {
+        _startEndingSequence();
+        return;
+      }
+
       // Check for fragment collection
       final fragments = children.whereType<MemoryFragment>();
       for (final fragment in fragments) {
@@ -115,9 +131,15 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     }
   }
 
+  void _startEndingSequence() {
+    isEndingActive = true;
+    player.stopMovement();
+    endingSequence.start();
+  }
+
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    if (!isTransitioning) {
+    if (!isTransitioning && !isEndingActive) {
       // Handle dialog dismissal
       if (event is KeyDownEvent && 
           event.logicalKey == LogicalKeyboardKey.space && 

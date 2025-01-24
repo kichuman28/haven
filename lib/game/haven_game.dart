@@ -10,6 +10,7 @@ import 'managers/memory_manager.dart';
 import 'components/memory_fragment.dart';
 import 'components/fragment_progress.dart';
 import 'components/ending_sequence.dart';
+import 'components/end_screen.dart';
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
@@ -18,6 +19,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final MemoryManager memoryManager;
   late final FragmentProgress fragmentProgress;
   late final EndingSequence endingSequence;
+  late final EndScreen endScreen;
   
   // World position tracking
   Vector2 worldPosition = Vector2.zero();
@@ -50,6 +52,10 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     endingSequence = EndingSequence(memoryManager);
     add(endingSequence);
     
+    // Initialize end screen
+    endScreen = EndScreen();
+    add(endScreen);
+    
     player = Player()
       ..position = Vector2(
         size.x / 2,
@@ -67,11 +73,58 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
   }
 
+  void resetGame() {
+    // Reset world position
+    worldPosition = Vector2.zero();
+    
+    // Reset player
+    player.position = Vector2(size.x / 2, size.y / 2);
+    player.stopMovement();
+    
+    // Reset managers
+    memoryManager = MemoryManager();
+    remove(children.whereType<MemoryManager>().first);
+    add(memoryManager);
+    
+    // Reset UI
+    fragmentProgress = FragmentProgress(memoryManager);
+    remove(children.whereType<FragmentProgress>().first);
+    add(fragmentProgress);
+    
+    // Reset ending components
+    endingSequence = EndingSequence(memoryManager);
+    remove(children.whereType<EndingSequence>().first);
+    add(endingSequence);
+    
+    // Hide end screen
+    endScreen.isVisible = false;
+    
+    // Reset game state
+    isTransitioning = false;
+    isEndingActive = false;
+    fadeIn = false;
+    transitionAlpha = 0;
+    
+    // Reset UI overlay
+    uiOverlay = UIOverlay(worldPosition);
+    remove(children.whereType<UIOverlay>().first);
+    add(uiOverlay);
+    uiOverlay.addDiscoveredScreen(worldPosition);
+    
+    // Spawn initial fragments
+    memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
     
-    if (isEndingActive) return;
+    if (isEndingActive) {
+      if (!endingSequence.isActive && !endScreen.isVisible) {
+        endScreen.show();
+      }
+      return;
+    }
     
     if (!isTransitioning) {
       // Check if player has reached the end point with all fragments

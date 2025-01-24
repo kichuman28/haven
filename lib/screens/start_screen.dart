@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flame/game.dart';
-import '../game/haven_game.dart';
+import 'intro_sequence.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -70,9 +69,7 @@ class StartScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (context) => GameWidget(
-                            game: HavenGame(),
-                          ),
+                          builder: (context) => const IntroSequence(),
                         ),
                       );
                     },

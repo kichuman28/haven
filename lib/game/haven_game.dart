@@ -14,6 +14,8 @@ import 'components/end_screen.dart';
 import 'components/notes_menu.dart';
 import 'components/health_bar.dart';
 import 'components/radiation_zone.dart';
+import 'components/riftling_enemy.dart';
+import 'dart:math' as math;
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
@@ -118,6 +120,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
       ));
     }
 
+    // Spawn initial Riftlings
+    spawnRiftlingsForScreen();
+
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
   }
@@ -133,9 +138,10 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Reset memory manager state
     memoryManager.reset();
     
-    // Remove temporary components (radiation zones and fragments)
+    // Remove temporary components (radiation zones, fragments, and Riftlings)
     children.whereType<RadiationZone>().forEach((component) => component.removeFromParent());
     children.whereType<MemoryFragment>().forEach((component) => component.removeFromParent());
+    children.whereType<RiftlingEnemy>().forEach((component) => component.removeFromParent());
     
     // Reset player position
     player.position = Vector2(size.x / 2, size.y / 2);
@@ -179,9 +185,35 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         ),
       ));
     }
+
+    // Spawn Riftlings for the new screen
+    spawnRiftlingsForScreen();
     
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
+  }
+
+  void spawnRiftlingsForScreen() {
+    // Remove any existing Riftlings
+    children.whereType<RiftlingEnemy>().forEach((riftling) => riftling.removeFromParent());
+
+    // Only spawn Riftlings in screens with radiation zones
+    if ((worldPosition.x == 2 && worldPosition.y == 1) ||  // Fragment #2
+        (worldPosition.x == 2 && worldPosition.y == 3) ||  // Fragment #4
+        (worldPosition.x == 1 && worldPosition.y == 1)) {  // Fragment #6
+      
+      // Spawn 3 Riftlings in random positions
+      final random = math.Random();
+      for (int i = 0; i < 3; i++) {
+        final riftling = RiftlingEnemy(
+          position: Vector2(
+            50 + random.nextDouble() * (size.x - 100),  // Keep away from edges
+            50 + random.nextDouble() * (size.y - 100),
+          ),
+        );
+        add(riftling);
+      }
+    }
   }
 
   @override
@@ -331,8 +363,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
       fragment.removeFromParent();
     }
     
-    // Remove existing radiation zones
+    // Remove existing radiation zones and Riftlings
     children.whereType<RadiationZone>().forEach((zone) => zone.removeFromParent());
+    children.whereType<RiftlingEnemy>().forEach((riftling) => riftling.removeFromParent());
     
     // Update world position based on direction
     worldPosition = nextPosition;
@@ -372,6 +405,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         ),
       ));
     }
+
+    // Spawn Riftlings for the new screen
+    spawnRiftlingsForScreen();
   }
 
   void resetPlayerPosition(Vector2 newPosition) {

@@ -1,8 +1,9 @@
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flame/collisions.dart';
 
-class Player extends PositionComponent {
+class Player extends PositionComponent with CollisionCallbacks {
   Player() : super(size: Vector2(40, 50));
 
   // Movement speed in pixels per second
@@ -20,6 +21,11 @@ class Player extends PositionComponent {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    
+    // Add hitbox for collision detection
+    add(CircleHitbox()
+      ..radius = 20
+      ..collisionType = CollisionType.active);
   }
 
   @override

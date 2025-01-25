@@ -21,6 +21,11 @@ class HealthBar extends Component with HasGameRef<HavenGame> {
     _health = (_health + amount).clamp(0.0, 100.0);
   }
   
+  void resetHealth() {
+    _health = 100.0;
+    _displayHealth = 100.0;
+  }
+  
   bool get isDead => _health <= 0;
 
   @override

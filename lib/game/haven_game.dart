@@ -42,7 +42,10 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    
+    await loadGame();
+  }
+
+  Future<void> loadGame() async {
     // Initialize managers
     worldManager = WorldManager();
     add(worldManager);
@@ -75,70 +78,58 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         size.x / 2,
         size.y / 2,
       );
-    
     add(player);
 
     // Initialize UI overlay
     uiOverlay = UIOverlay(worldPosition);
-    uiOverlay.addDiscoveredScreen(worldPosition);
     add(uiOverlay);
+    uiOverlay.addDiscoveredScreen(worldPosition);
 
-    // Add test radiation zone in starting screen
+    // Add initial radiation zone
     add(RadiationZone(
       bounds: Rect.fromLTWH(
-        size.x * 0.6, // Right side of screen
-        size.y * 0.3, // Upper third
-        size.x * 0.3, // 30% of screen width
-        size.y * 0.4, // 40% of screen height
+        size.x * 0.6,
+        size.y * 0.3,
+        size.x * 0.3,
+        size.y * 0.4,
       ),
     ));
 
-    // Spawn initial fragments for starting screen
+    // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
   }
 
   void resetGame() {
-    // Reset world position
-    worldPosition = Vector2.zero();
-    
-    // Reset player
-    player.position = Vector2(size.x / 2, size.y / 2);
-    player.stopMovement();
-    
-    // Reset managers
-    memoryManager = MemoryManager();
-    remove(children.whereType<MemoryManager>().first);
-    add(memoryManager);
-    
-    // Reset UI
-    fragmentProgress = FragmentProgress(memoryManager);
-    remove(children.whereType<FragmentProgress>().first);
-    add(fragmentProgress);
-    
-    // Reset ending components
-    endingSequence = EndingSequence(memoryManager);
-    remove(children.whereType<EndingSequence>().first);
-    add(endingSequence);
-    
-    // Hide end screen
-    endScreen.isVisible = false;
-    
-    // Reset health bar
-    healthBar = HealthBar();
-    remove(children.whereType<HealthBar>().first);
-    add(healthBar);
-    
     // Reset game state
     isTransitioning = false;
     isEndingActive = false;
     fadeIn = false;
     transitionAlpha = 0;
+    worldPosition = Vector2.zero();
     
-    // Reset UI overlay
-    uiOverlay = UIOverlay(worldPosition);
-    remove(children.whereType<UIOverlay>().first);
-    add(uiOverlay);
-    uiOverlay.addDiscoveredScreen(worldPosition);
+    // Remove temporary components (radiation zones and fragments)
+    children.whereType<RadiationZone>().forEach((component) => component.removeFromParent());
+    children.whereType<MemoryFragment>().forEach((component) => component.removeFromParent());
+    
+    // Reset player position
+    player.position = Vector2(size.x / 2, size.y / 2);
+    player.stopMovement();
+    
+    // Reset health
+    healthBar.resetHealth();
+    
+    // Reset end screen
+    endScreen.hide();
+    
+    // Add initial radiation zone
+    add(RadiationZone(
+      bounds: Rect.fromLTWH(
+        size.x * 0.6,
+        size.y * 0.3,
+        size.x * 0.3,
+        size.y * 0.4,
+      ),
+    ));
     
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
@@ -152,6 +143,14 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
       if (!endingSequence.isActive && !endScreen.isVisible) {
         endScreen.show();
       }
+      return;
+    }
+    
+    // Check for player death
+    if (healthBar.isDead && !endScreen.isVisible) {
+      isEndingActive = true;
+      player.stopMovement();
+      endScreen.show();
       return;
     }
     

@@ -9,10 +9,19 @@ class EndScreen extends Component with HasGameRef<HavenGame>, TapCallbacks {
   static const double fadeInDuration = 2.0;
   double elapsedTime = 0;
 
+  @override
+  bool containsLocalPoint(Vector2 point) => isVisible;
+
   void show() {
     isVisible = true;
     elapsedTime = 0;
     alpha = 0;
+  }
+
+  void hide() {
+    isVisible = false;
+    alpha = 0;
+    elapsedTime = 0;
   }
 
   @override
@@ -27,14 +36,19 @@ class EndScreen extends Component with HasGameRef<HavenGame>, TapCallbacks {
 
   @override
   bool onTapDown(TapDownEvent event) {
-    if (!isVisible || alpha < 1) return true;
+    if (!isVisible || alpha < 1) return false;
 
     final buttonRect = _getPlayAgainButtonRect();
     if (buttonRect.contains(event.canvasPosition.toOffset())) {
+      hide();
       gameRef.resetGame();
+      return true;
     }
-    return true;
+    return false;
   }
+
+  @override
+  int get priority => 100; // Ensure end screen receives events first
 
   Rect _getPlayAgainButtonRect() {
     final buttonWidth = gameRef.size.x * 0.3;

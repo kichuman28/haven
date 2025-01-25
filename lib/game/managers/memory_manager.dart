@@ -113,15 +113,15 @@ All fragments collected. The Central Chamber has been unlocked. Proceed to coord
     );
     
     for (final fragmentInfo in fragments) {
-      if (!collectedFragments.contains(fragmentInfo['id'])) {
-        final fragment = MemoryFragment(
-          position: fragmentInfo['position'],
-          fragmentId: fragmentInfo['id'],
-          message: fragmentInfo['message'],
-          sender: fragmentInfo['sender'],
-        );
-        gameRef.add(fragment);
-      }
+      final fragment = MemoryFragment(
+        position: fragmentInfo['position'],
+        fragmentId: fragmentInfo['id'],
+        message: fragmentInfo['message'],
+        sender: fragmentInfo['sender'],
+      );
+      // Set collected state if previously collected
+      fragment.isCollected = collectedFragments.contains(fragmentInfo['id']);
+      gameRef.add(fragment);
     }
   }
 
@@ -139,11 +139,19 @@ All fragments collected. The Central Chamber has been unlocked. Proceed to coord
       return;
     }
 
-    if (collectedFragments.contains(fragment.fragmentId)) return;
+    if (collectedFragments.contains(fragment.fragmentId)) {
+      // If already collected, just show the message again
+      hideDialog();
+      activeDialog = MemoryDialog(
+        message: fragment.message,
+        sender: fragment.sender,
+      );
+      gameRef.add(activeDialog!);
+      return;
+    }
     
     collectedFragments.add(fragment.fragmentId);
     fragment.isCollected = true;
-    fragment.removeFromParent();
     
     // Remove existing dialog if any
     hideDialog();

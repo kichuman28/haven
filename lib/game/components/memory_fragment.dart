@@ -46,11 +46,13 @@ class MemoryFragment extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    if (isCollected) return;
+    final color = isCollected ? Colors.grey : Colors.amber;
+    final glowOpacity = isCollected ? 0.15 : 0.3;
+    final energyOpacity = isCollected ? 0.4 : 1.0;
 
     // Draw outer glow
     final Paint glowPaint = Paint()
-      ..color = Colors.amber.withOpacity(0.3)
+      ..color = color.withOpacity(glowOpacity)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
     canvas.drawCircle(
       Offset(size.x / 2, size.y / 2),
@@ -60,7 +62,7 @@ class MemoryFragment extends PositionComponent {
 
     // Draw main orb
     final Paint orbPaint = Paint()
-      ..color = Colors.amber
+      ..color = color.withOpacity(energyOpacity)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(
       Offset(size.x / 2, size.y / 2),
@@ -70,7 +72,7 @@ class MemoryFragment extends PositionComponent {
 
     // Draw inner glow
     final Paint innerGlowPaint = Paint()
-      ..color = Colors.white.withOpacity(0.8)
+      ..color = Colors.white.withOpacity(isCollected ? 0.4 : 0.8)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(
       Offset(size.x / 2, size.y / 2),
@@ -80,7 +82,7 @@ class MemoryFragment extends PositionComponent {
 
     // Draw energy lines
     final Paint energyPaint = Paint()
-      ..color = Colors.amber[200]!
+      ..color = color.withOpacity(energyOpacity * 0.7)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
@@ -103,8 +105,8 @@ class MemoryFragment extends PositionComponent {
     final textPainter = TextPainter(
       text: TextSpan(
         text: fragmentId.toString(),
-        style: const TextStyle(
-          color: Colors.black,
+        style: TextStyle(
+          color: isCollected ? Colors.white.withOpacity(0.5) : Colors.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),

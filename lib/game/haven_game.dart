@@ -11,6 +11,7 @@ import 'components/memory_fragment.dart';
 import 'components/fragment_progress.dart';
 import 'components/ending_sequence.dart';
 import 'components/end_screen.dart';
+import 'components/notes_menu.dart';
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
@@ -20,6 +21,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final FragmentProgress fragmentProgress;
   late final EndingSequence endingSequence;
   late final EndScreen endScreen;
+  late final NotesMenu notesMenu;
   
   // World position tracking
   Vector2 worldPosition = Vector2.zero();
@@ -55,6 +57,10 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Initialize end screen
     endScreen = EndScreen();
     add(endScreen);
+    
+    // Initialize notes menu
+    notesMenu = NotesMenu(memoryManager);
+    add(notesMenu);
     
     player = Player()
       ..position = Vector2(
@@ -192,16 +198,31 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    if (!isTransitioning && !isEndingActive) {
-      // Handle dialog dismissal
-      if (event is KeyDownEvent && 
-          event.logicalKey == LogicalKeyboardKey.space && 
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.keyN) {
+        notesMenu.toggleVisibility();
+        return KeyEventResult.handled;
+      }
+      
+      // If notes menu is visible, let it handle keyboard events first
+      if (notesMenu.isVisible) {
+        if (notesMenu.onKeyEvent(event, keysPressed)) {
+          return KeyEventResult.handled;
+        }
+      }
+      
+      if (event.logicalKey == LogicalKeyboardKey.space && 
           memoryManager.activeDialog != null) {
         memoryManager.hideDialog();
         return KeyEventResult.handled;
       }
+    }
+    
+    // Only allow player movement if notes menu is not visible
+    if (!isTransitioning && !isEndingActive && !notesMenu.isVisible) {
       player.onKeyEvent(event, keysPressed);
     }
+    
     return KeyEventResult.handled;
   }
 

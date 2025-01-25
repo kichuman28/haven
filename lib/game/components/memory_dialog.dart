@@ -39,9 +39,28 @@ class MemoryDialog extends Component with HasGameRef {
       Paint()..color = Colors.black.withOpacity(0.7 * opacity),
     );
 
-    // Draw dialog box
+    // Calculate dialog size based on content
     final dialogWidth = size.x * 0.7;
-    final dialogHeight = size.y * 0.4;
+    
+    // Pre-calculate text height
+    final messageTextPainter = TextPainter(
+      text: TextSpan(
+        text: message,
+        style: TextStyle(
+          color: Colors.white.withOpacity(opacity),
+          fontSize: 18,
+          height: 1.5,
+        ),
+      ),
+      textDirection: ui.TextDirection.ltr,
+      maxLines: null,
+      textAlign: TextAlign.left,
+    );
+    messageTextPainter.layout(maxWidth: dialogWidth - 40);
+    
+    // Calculate total height needed
+    final dialogHeight = messageTextPainter.height + 120; // Extra space for sender and continue text
+    
     final dialogX = (size.x - dialogWidth) / 2;
     final dialogY = (size.y - dialogHeight) / 2;
 
@@ -94,21 +113,7 @@ class MemoryDialog extends Component with HasGameRef {
       Offset(dialogX + 20, dialogY + 20),
     );
 
-    // Draw message text
-    final messageTextPainter = TextPainter(
-      text: TextSpan(
-        text: message,
-        style: TextStyle(
-          color: Colors.white.withOpacity(opacity),
-          fontSize: 18,
-          height: 1.5,
-        ),
-      ),
-      textDirection: ui.TextDirection.ltr,
-      maxLines: null,
-      textAlign: TextAlign.left,
-    );
-    messageTextPainter.layout(maxWidth: dialogWidth - 40);
+    // Draw message text (reuse the pre-calculated painter)
     messageTextPainter.paint(
       recordingCanvas,
       Offset(dialogX + 20, dialogY + 60),
@@ -118,7 +123,7 @@ class MemoryDialog extends Component with HasGameRef {
     final blinkValue = ((_time * 2) % 1.0);
     final continueTextPainter = TextPainter(
       text: TextSpan(
-        text: 'Click to continue...',
+        text: 'Press SPACE to continue...',
         style: TextStyle(
           color: Colors.blue[300]!.withOpacity(opacity * blinkValue),
           fontSize: 16,

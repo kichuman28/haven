@@ -16,6 +16,8 @@ import 'components/health_bar.dart';
 import 'components/radiation_zone.dart';
 import 'components/riftling_enemy.dart';
 import 'components/werewolf_enemy.dart';
+import 'components/tutorial_hint.dart';
+import 'components/memory_dialog.dart';
 import 'dart:math' as math;
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
@@ -87,6 +89,16 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     uiOverlay = UIOverlay(worldPosition);
     add(uiOverlay);
     uiOverlay.addDiscoveredScreen(worldPosition);
+
+    // Add tutorial hint in starting screen
+    if (worldPosition == Vector2.zero()) {
+      final random = math.Random();
+      final hintPosition = Vector2(
+        100 + random.nextDouble() * (size.x - 200),
+        100 + random.nextDouble() * (size.y - 200),
+      );
+      add(TutorialHint(position: hintPosition));
+    }
 
     // Add radiation zones based on current screen
     if (worldPosition.x == 2 && worldPosition.y == 1) {
@@ -331,10 +343,11 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
       fragment.removeFromParent();
     }
     
-    // Remove existing radiation zones and Riftlings
+    // Remove existing components
     children.whereType<RadiationZone>().forEach((zone) => zone.removeFromParent());
     children.whereType<RiftlingEnemy>().forEach((enemy) => enemy.removeFromParent());
     children.whereType<WerewolfEnemy>().forEach((enemy) => enemy.removeFromParent());
+    children.whereType<TutorialHint>().forEach((hint) => hint.removeFromParent());
     
     // Update world position based on direction
     worldPosition = nextPosition;
@@ -349,6 +362,16 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
       add(RadiationZone(bounds: Rect.fromLTWH(250, 250, 100, 100)));
     } else if (worldPosition.x == 1 && worldPosition.y == 1) {
       add(RadiationZone(bounds: Rect.fromLTWH(150, 350, 100, 100)));
+    }
+
+    // Add tutorial hint if moving back to starting screen
+    if (worldPosition == Vector2.zero()) {
+      final random = math.Random();
+      final hintPosition = Vector2(
+        100 + random.nextDouble() * (size.x - 200),
+        100 + random.nextDouble() * (size.y - 200),
+      );
+      add(TutorialHint(position: hintPosition));
     }
 
     // Spawn enemies for the new screen
@@ -371,5 +394,128 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         Paint()..color = Colors.black.withOpacity(transitionAlpha),
       );
     }
+  }
+
+  void showTutorialInstructions(List<String> instructions) {
+    // Remove any existing dialog
+    if (memoryManager.activeDialog != null) {
+      memoryManager.hideDialog();
+    }
+    
+    // Format instructions with proper spacing
+    final formattedInstructions = instructions.map((instruction) => '  $instruction').join('\n\n');
+    
+    // Create and show new dialog with proper sizing
+    memoryManager.activeDialog = MemoryDialog(
+      message: formattedInstructions,
+      sender: "Tutorial",
+    );
+    add(memoryManager.activeDialog!);
+  }
+
+  // Add method to show instructions dialog
+  void showInstructions(List<String> instructions) {
+    // Create a styled text for instructions
+    final TextSpan instructionText = TextSpan(
+      children: [
+        for (var instruction in instructions)
+          TextSpan(
+            text: "• $instruction\n",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              height: 1.5,
+            ),
+          ),
+      ],
+    );
+
+    // Create text painter to calculate height
+    final textPainter = TextPainter(
+      text: instructionText,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.left,
+    );
+    textPainter.layout(maxWidth: size.x * 0.8);
+
+    // Add an overlay component to show the instructions
+    final instructionBox = InstructionOverlay(
+      size: Vector2(size.x * 0.8, textPainter.height + 40),
+      position: Vector2(size.x * 0.1, size.y * 0.1),
+      text: instructionText,
+    );
+    add(instructionBox);
+  }
+}
+
+class InstructionOverlay extends PositionComponent with KeyboardHandler {
+  final TextSpan text;
+  bool isVisible = true;
+
+  InstructionOverlay({
+    required Vector2 position,
+    required Vector2 size,
+    required this.text,
+  }) : super(position: position, size: size);
+
+  @override
+  void render(Canvas canvas) {
+    if (!isVisible) return;
+
+    // Draw background
+    final bgRect = Rect.fromLTWH(0, 0, size.x, size.y);
+    canvas.drawRect(
+      bgRect,
+      Paint()
+        ..color = Colors.black.withOpacity(0.9)
+        ..style = PaintingStyle.fill,
+    );
+
+    // Draw border
+    canvas.drawRect(
+      bgRect,
+      Paint()
+        ..color = Colors.blue.withOpacity(0.7)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+
+    // Draw text
+    final textPainter = TextPainter(
+      text: text,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.left,
+    );
+    textPainter.layout(maxWidth: size.x - 40);
+    textPainter.paint(canvas, Offset(20, 20));
+
+    // Draw "Press SPACE to continue" at the bottom
+    final continueText = TextPainter(
+      text: const TextSpan(
+        text: "Press SPACE to continue",
+        style: TextStyle(
+          color: Colors.white70,
+          fontSize: 14,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    continueText.layout();
+    continueText.paint(
+      canvas,
+      Offset(size.x - continueText.width - 20, size.y - continueText.height - 10),
+    );
+  }
+
+  @override
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    if (event is KeyDownEvent && 
+        event.logicalKey == LogicalKeyboardKey.space && 
+        isVisible) {
+      removeFromParent();
+      return true;
+    }
+    return false;
   }
 } 

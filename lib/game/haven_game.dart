@@ -170,7 +170,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         );
         add(riftling);
       }
-    } else if (!isRadiationScreen && worldPosition != Vector2(2, 4)) {  // Don't spawn in ending room
+    } else if (!isRadiationScreen && worldPosition != Vector2(2, 4) && worldPosition != Vector2.zero()) {  // Don't spawn in ending room or starting screen
       // Spawn Werewolves in non-radiation zones
       for (int i = 0; i < 2; i++) {  // Spawn fewer werewolves as they're tougher
         final werewolf = WerewolfEnemy(

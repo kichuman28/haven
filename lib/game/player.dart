@@ -2,9 +2,14 @@ import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/collisions.dart';
+import 'components/player_sprite.dart';
 
 class Player extends PositionComponent with CollisionCallbacks {
-  Player() : super(size: Vector2(40, 50));
+  late final PlayerSprite _sprite;
+  
+  Player() : super(size: Vector2(60, 75), anchor: Anchor.center) {
+    _sprite = PlayerSprite();
+  }
 
   // Movement speed in pixels per second
   final double _speed = 300.0;
@@ -22,9 +27,13 @@ class Player extends PositionComponent with CollisionCallbacks {
   Future<void> onLoad() async {
     await super.onLoad();
     
+    // Add sprite and center it
+    add(_sprite);
+    _sprite.position = size / 2;
+    
     // Add hitbox for collision detection
     add(CircleHitbox()
-      ..radius = 20
+      ..radius = 30
       ..collisionType = CollisionType.active);
   }
 
@@ -33,6 +42,7 @@ class Player extends PositionComponent with CollisionCallbacks {
     super.update(dt);
     if (_hasInput) {
       position += _velocity * dt;
+      _sprite.updateDirection(_velocity);
     }
 
     // Update bubble protection timer only when shield is active (space held)
@@ -57,24 +67,20 @@ class Player extends PositionComponent with CollisionCallbacks {
 
   @override
   void render(Canvas canvas) {
-    // Save the current canvas state
     canvas.save();
-    
-    // Move to center of the component
-    canvas.translate(size.x / 2, size.y / 2);
     
     // Draw shield if active
     if (isShieldActive && !_isCoolingDown && _bubbleTimeRemaining > 0) {
       final Paint shieldPaint = Paint()
         ..color = Colors.blue.withOpacity(0.3)
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset.zero, 30, shieldPaint);
+      canvas.drawCircle(Offset(size.x/2, size.y/2), 45, shieldPaint);
       
       final Paint shieldBorderPaint = Paint()
         ..color = Colors.blue.withOpacity(0.7)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
-      canvas.drawCircle(Offset.zero, 30, shieldBorderPaint);
+      canvas.drawCircle(Offset(size.x/2, size.y/2), 45, shieldBorderPaint);
     }
 
     // Always draw the bubble timer when there's time remaining
@@ -86,7 +92,7 @@ class Player extends PositionComponent with CollisionCallbacks {
       
       final double timerAngle = (_bubbleTimeRemaining / maxBubbleDuration) * 2 * 3.14159;
       canvas.drawArc(
-        Rect.fromCircle(center: Offset.zero, radius: 35),
+        Rect.fromCircle(center: Offset(size.x/2, size.y/2), radius: 50),
         -1.57079633, // Start from top (-90 degrees)
         timerAngle,
         false,
@@ -103,7 +109,7 @@ class Player extends PositionComponent with CollisionCallbacks {
       
       final double cooldownAngle = (_cooldownTimeRemaining / bubbleCooldown) * 2 * 3.14159;
       canvas.drawArc(
-        Rect.fromCircle(center: Offset.zero, radius: 40),
+        Rect.fromCircle(center: Offset(size.x/2, size.y/2), radius: 55),
         -1.57079633,
         cooldownAngle,
         false,
@@ -111,45 +117,6 @@ class Player extends PositionComponent with CollisionCallbacks {
       );
     }
     
-    // Draw the head
-    final Paint headPaint = Paint()
-      ..color = Colors.pink[300]!
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(0, -10), 10, headPaint);
-    
-    // Draw the body
-    final Paint bodyPaint = Paint()
-      ..color = Colors.blue[700]!
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
-    
-    // Body line
-    canvas.drawLine(
-      Offset(0, 0),
-      Offset(0, 15),
-      bodyPaint,
-    );
-    
-    // Arms
-    canvas.drawLine(
-      Offset(-12, 5),
-      Offset(12, 5),
-      bodyPaint,
-    );
-    
-    // Legs
-    canvas.drawLine(
-      Offset(0, 15),
-      Offset(-8, 25),
-      bodyPaint,
-    );
-    canvas.drawLine(
-      Offset(0, 15),
-      Offset(8, 25),
-      bodyPaint,
-    );
-    
-    // Restore the canvas state
     canvas.restore();
   }
 

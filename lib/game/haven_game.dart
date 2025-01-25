@@ -13,6 +13,7 @@ import 'components/ending_sequence.dart';
 import 'components/end_screen.dart';
 import 'components/notes_menu.dart';
 import 'components/health_bar.dart';
+import 'components/radiation_zone.dart';
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
@@ -31,6 +32,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   double transitionAlpha = 0;
   bool fadeIn = false;
   bool isEndingActive = false;
+  bool isShieldActive = false;
   
   static const transitionDuration = 0.5; // seconds
   
@@ -80,6 +82,16 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     uiOverlay = UIOverlay(worldPosition);
     uiOverlay.addDiscoveredScreen(worldPosition);
     add(uiOverlay);
+
+    // Add test radiation zone in starting screen
+    add(RadiationZone(
+      bounds: Rect.fromLTWH(
+        size.x * 0.6, // Right side of screen
+        size.y * 0.3, // Upper third
+        size.x * 0.3, // 30% of screen width
+        size.y * 0.4, // 40% of screen height
+      ),
+    ));
 
     // Spawn initial fragments for starting screen
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
@@ -209,6 +221,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    // Update shield state for both key down and up events
+    isShieldActive = keysPressed.contains(LogicalKeyboardKey.space);
+
     if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.keyN) {
         notesMenu.toggleVisibility();

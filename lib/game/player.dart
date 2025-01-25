@@ -9,7 +9,6 @@ class Player extends PositionComponent {
   final double _speed = 300.0;
   final Vector2 _velocity = Vector2.zero();
   bool _hasInput = false;
-  bool _shieldActive = false;
   
   // Bubble protection mechanics
   static const double maxBubbleDuration = 10.0; // seconds
@@ -30,11 +29,10 @@ class Player extends PositionComponent {
       position += _velocity * dt;
     }
 
-    // Update bubble protection timer
-    if (_shieldActive) {
+    // Update bubble protection timer only when shield is active (space held)
+    if (isShieldActive && !_isCoolingDown && _bubbleTimeRemaining > 0) {
       _bubbleTimeRemaining -= dt;
       if (_bubbleTimeRemaining <= 0) {
-        _shieldActive = false;
         _bubbleTimeRemaining = 0;
         _isCoolingDown = true;
         _cooldownTimeRemaining = bubbleCooldown;
@@ -60,7 +58,7 @@ class Player extends PositionComponent {
     canvas.translate(size.x / 2, size.y / 2);
     
     // Draw shield if active
-    if (_shieldActive) {
+    if (isShieldActive && !_isCoolingDown && _bubbleTimeRemaining > 0) {
       final Paint shieldPaint = Paint()
         ..color = Colors.blue.withOpacity(0.3)
         ..style = PaintingStyle.fill;
@@ -76,7 +74,7 @@ class Player extends PositionComponent {
     // Always draw the bubble timer when there's time remaining
     if (_bubbleTimeRemaining > 0) {
       final Paint timerPaint = Paint()
-        ..color = _shieldActive ? Colors.blue : Colors.blue.withOpacity(0.3)
+        ..color = (isShieldActive && !_isCoolingDown) ? Colors.blue : Colors.blue.withOpacity(0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
       
@@ -153,14 +151,6 @@ class Player extends PositionComponent {
     _velocity.setZero();
     _hasInput = false;
 
-    // Toggle shield with spacebar if not cooling down and has time remaining
-    if (event is KeyDownEvent && 
-        event.logicalKey == LogicalKeyboardKey.space && 
-        !_isCoolingDown && 
-        _bubbleTimeRemaining > 0) {
-      _shieldActive = !_shieldActive;  // Toggle the shield state
-    }
-
     // Handle movement based on pressed keys
     if (keysPressed.contains(LogicalKeyboardKey.keyW) || 
         keysPressed.contains(LogicalKeyboardKey.arrowUp)) {
@@ -196,4 +186,11 @@ class Player extends PositionComponent {
     _velocity.setZero();
     _hasInput = false;
   }
+
+  // Check if shield is currently active (space held and has time remaining)
+  bool get isShieldActive => 
+    parent != null && 
+    (parent as dynamic).isShieldActive && 
+    !_isCoolingDown && 
+    _bubbleTimeRemaining > 0;
 } 

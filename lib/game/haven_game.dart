@@ -15,6 +15,7 @@ import 'components/notes_menu.dart';
 import 'components/health_bar.dart';
 import 'components/radiation_zone.dart';
 import 'components/riftling_enemy.dart';
+import 'components/werewolf_enemy.dart';
 import 'dart:math' as math;
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
@@ -89,39 +90,15 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
     // Add radiation zones based on current screen
     if (worldPosition.x == 2 && worldPosition.y == 1) {
-      // Radiation zone for fragment #2
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          150,  // fragment is at 200, so start 50 pixels before
-          150,  // fragment is at 200, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(150, 150, 100, 100)));
     } else if (worldPosition.x == 2 && worldPosition.y == 3) {
-      // Radiation zone for fragment #4
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          250,  // fragment is at 300, so start 50 pixels before
-          250,  // fragment is at 300, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(250, 250, 100, 100)));
     } else if (worldPosition.x == 1 && worldPosition.y == 1) {
-      // Radiation zone for fragment #6
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          150,  // fragment is at 200, so start 50 pixels before
-          350,  // fragment is at 400, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(150, 350, 100, 100)));
     }
 
-    // Spawn initial Riftlings
-    spawnRiftlingsForScreen();
+    // Spawn enemies for the current screen
+    spawnEnemiesForScreen();
 
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
@@ -138,10 +115,11 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Reset memory manager state
     memoryManager.reset();
     
-    // Remove temporary components (radiation zones, fragments, and Riftlings)
+    // Remove temporary components
     children.whereType<RadiationZone>().forEach((component) => component.removeFromParent());
     children.whereType<MemoryFragment>().forEach((component) => component.removeFromParent());
     children.whereType<RiftlingEnemy>().forEach((component) => component.removeFromParent());
+    children.whereType<WerewolfEnemy>().forEach((component) => component.removeFromParent());
     
     // Reset player position
     player.position = Vector2(size.x / 2, size.y / 2);
@@ -155,63 +133,53 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     
     // Add radiation zones based on current screen
     if (worldPosition.x == 2 && worldPosition.y == 1) {
-      // Radiation zone for fragment #2
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          150,  // fragment is at 200, so start 50 pixels before
-          150,  // fragment is at 200, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(150, 150, 100, 100)));
     } else if (worldPosition.x == 2 && worldPosition.y == 3) {
-      // Radiation zone for fragment #4
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          250,  // fragment is at 300, so start 50 pixels before
-          250,  // fragment is at 300, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(250, 250, 100, 100)));
     } else if (worldPosition.x == 1 && worldPosition.y == 1) {
-      // Radiation zone for fragment #6
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          150,  // fragment is at 200, so start 50 pixels before
-          350,  // fragment is at 400, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(150, 350, 100, 100)));
     }
 
-    // Spawn Riftlings for the new screen
-    spawnRiftlingsForScreen();
+    // Spawn enemies for the new screen
+    spawnEnemiesForScreen();
     
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
   }
 
-  void spawnRiftlingsForScreen() {
-    // Remove any existing Riftlings
-    children.whereType<RiftlingEnemy>().forEach((riftling) => riftling.removeFromParent());
+  void spawnEnemiesForScreen() {
+    // Remove any existing enemies
+    children.whereType<RiftlingEnemy>().forEach((enemy) => enemy.removeFromParent());
+    children.whereType<WerewolfEnemy>().forEach((enemy) => enemy.removeFromParent());
 
-    // Only spawn Riftlings in screens with radiation zones
-    if ((worldPosition.x == 2 && worldPosition.y == 1) ||  // Fragment #2
-        (worldPosition.x == 2 && worldPosition.y == 3) ||  // Fragment #4
-        (worldPosition.x == 1 && worldPosition.y == 1)) {  // Fragment #6
-      
-      // Spawn 3 Riftlings in random positions
-      final random = math.Random();
+    // Check if this is a radiation zone screen
+    bool isRadiationScreen = (worldPosition.x == 2 && worldPosition.y == 1) ||  // Fragment #2
+                            (worldPosition.x == 2 && worldPosition.y == 3) ||  // Fragment #4
+                            (worldPosition.x == 1 && worldPosition.y == 1);    // Fragment #6
+
+    final random = math.Random();
+    
+    if (isRadiationScreen) {
+      // Spawn Riftlings in radiation zones
       for (int i = 0; i < 3; i++) {
         final riftling = RiftlingEnemy(
           position: Vector2(
-            50 + random.nextDouble() * (size.x - 100),  // Keep away from edges
+            50 + random.nextDouble() * (size.x - 100),
             50 + random.nextDouble() * (size.y - 100),
           ),
         );
         add(riftling);
+      }
+    } else if (!isRadiationScreen && worldPosition != Vector2(2, 4)) {  // Don't spawn in ending room
+      // Spawn Werewolves in non-radiation zones
+      for (int i = 0; i < 2; i++) {  // Spawn fewer werewolves as they're tougher
+        final werewolf = WerewolfEnemy(
+          position: Vector2(
+            50 + random.nextDouble() * (size.x - 100),
+            50 + random.nextDouble() * (size.y - 100),
+          ),
+        );
+        add(werewolf);
       }
     }
   }
@@ -365,7 +333,8 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     
     // Remove existing radiation zones and Riftlings
     children.whereType<RadiationZone>().forEach((zone) => zone.removeFromParent());
-    children.whereType<RiftlingEnemy>().forEach((riftling) => riftling.removeFromParent());
+    children.whereType<RiftlingEnemy>().forEach((enemy) => enemy.removeFromParent());
+    children.whereType<WerewolfEnemy>().forEach((enemy) => enemy.removeFromParent());
     
     // Update world position based on direction
     worldPosition = nextPosition;
@@ -375,39 +344,15 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
     // Add radiation zones based on current screen
     if (worldPosition.x == 2 && worldPosition.y == 1) {
-      // Radiation zone for fragment #2
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          150,  // fragment is at 200, so start 50 pixels before
-          150,  // fragment is at 200, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(150, 150, 100, 100)));
     } else if (worldPosition.x == 2 && worldPosition.y == 3) {
-      // Radiation zone for fragment #4
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          250,  // fragment is at 300, so start 50 pixels before
-          250,  // fragment is at 300, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(250, 250, 100, 100)));
     } else if (worldPosition.x == 1 && worldPosition.y == 1) {
-      // Radiation zone for fragment #6
-      add(RadiationZone(
-        bounds: Rect.fromLTWH(
-          150,  // fragment is at 200, so start 50 pixels before
-          350,  // fragment is at 400, so start 50 pixels before
-          100,  // 100 pixels wide
-          100,  // 100 pixels tall
-        ),
-      ));
+      add(RadiationZone(bounds: Rect.fromLTWH(150, 350, 100, 100)));
     }
 
-    // Spawn Riftlings for the new screen
-    spawnRiftlingsForScreen();
+    // Spawn enemies for the new screen
+    spawnEnemiesForScreen();
   }
 
   void resetPlayerPosition(Vector2 newPosition) {

@@ -107,6 +107,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     transitionAlpha = 0;
     worldPosition = Vector2.zero();
     
+    // Reset memory manager state
+    memoryManager.reset();
+    
     // Remove temporary components (radiation zones and fragments)
     children.whereType<RadiationZone>().forEach((component) => component.removeFromParent());
     children.whereType<MemoryFragment>().forEach((component) => component.removeFromParent());

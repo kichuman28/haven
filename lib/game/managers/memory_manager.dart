@@ -189,4 +189,10 @@ All fragments collected. The Central Chamber has been unlocked. Proceed to coord
     final fragment = fragmentData.firstWhere((f) => f['id'] == fragmentId);
     return fragment['story_order'];
   }
+
+  void reset() {
+    collectedFragments.clear();
+    hasCollectedAllFragments = false;
+    hideDialog();
+  }
 } 

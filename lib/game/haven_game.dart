@@ -12,6 +12,7 @@ import 'components/fragment_progress.dart';
 import 'components/ending_sequence.dart';
 import 'components/end_screen.dart';
 import 'components/notes_menu.dart';
+import 'components/health_bar.dart';
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
@@ -22,6 +23,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final EndingSequence endingSequence;
   late final EndScreen endScreen;
   late final NotesMenu notesMenu;
+  late final HealthBar healthBar;
   
   // World position tracking
   Vector2 worldPosition = Vector2.zero();
@@ -61,6 +63,10 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Initialize notes menu
     notesMenu = NotesMenu(memoryManager);
     add(notesMenu);
+    
+    // Initialize health bar
+    healthBar = HealthBar();
+    add(healthBar);
     
     player = Player()
       ..position = Vector2(
@@ -104,6 +110,11 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     
     // Hide end screen
     endScreen.isVisible = false;
+    
+    // Reset health bar
+    healthBar = HealthBar();
+    remove(children.whereType<HealthBar>().first);
+    add(healthBar);
     
     // Reset game state
     isTransitioning = false;

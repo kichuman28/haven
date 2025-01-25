@@ -3,24 +3,32 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import '../haven_game.dart';
 import '../player.dart';
+import 'riftling_sprite.dart';
 
 class RiftlingEnemy extends PositionComponent with CollisionCallbacks, HasGameRef<HavenGame> {
-  static const double riftlingSize = 20.0;
+  static const double riftlingSize = 32.0;
   static const double speed = 100.0;
   static const double damagePerSecond = 20.0;  // Will deal 20 damage per second
   bool isActive = true;
   late Vector2 velocity;
   bool isCollidingWithPlayer = false;
+  late final RiftlingSprite _sprite;
   
   RiftlingEnemy({required Vector2 position}) : super(
     position: position,
     size: Vector2.all(riftlingSize),
     anchor: Anchor.center,
-  );
+  ) {
+    _sprite = RiftlingSprite();
+  }
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    
+    // Add sprite
+    add(_sprite);
+    _sprite.position = size / 2;
     
     // Add circular hitbox for collision detection
     add(CircleHitbox()
@@ -40,23 +48,13 @@ class RiftlingEnemy extends PositionComponent with CollisionCallbacks, HasGameRe
       direction.normalize();
       velocity = direction * speed;
       position += velocity * dt;
+      _sprite.updateDirection(velocity);  // Update sprite direction
     }
 
     // Deal continuous damage if touching player without shield
     if (isCollidingWithPlayer && !gameRef.isShieldActive) {
       gameRef.healthBar.damage(damagePerSecond * dt);  // Scale damage by time
     }
-  }
-
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-    // Draw the Riftling as a simple red circle for now
-    canvas.drawCircle(
-      Offset.zero,
-      riftlingSize / 2,
-      Paint()..color = Colors.red,
-    );
   }
 
   @override

@@ -85,15 +85,38 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     add(uiOverlay);
     uiOverlay.addDiscoveredScreen(worldPosition);
 
-    // Add initial radiation zone
-    add(RadiationZone(
-      bounds: Rect.fromLTWH(
-        size.x * 0.6,
-        size.y * 0.3,
-        size.x * 0.3,
-        size.y * 0.4,
-      ),
-    ));
+    // Add radiation zones based on current screen
+    if (worldPosition.x == 2 && worldPosition.y == 1) {
+      // Radiation zone for fragment #2
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          150,  // fragment is at 200, so start 50 pixels before
+          150,  // fragment is at 200, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    } else if (worldPosition.x == 2 && worldPosition.y == 3) {
+      // Radiation zone for fragment #4
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          250,  // fragment is at 300, so start 50 pixels before
+          250,  // fragment is at 300, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    } else if (worldPosition.x == 1 && worldPosition.y == 1) {
+      // Radiation zone for fragment #6
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          150,  // fragment is at 200, so start 50 pixels before
+          350,  // fragment is at 400, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    }
 
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
@@ -124,15 +147,38 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Reset end screen
     endScreen.hide();
     
-    // Add initial radiation zone
-    add(RadiationZone(
-      bounds: Rect.fromLTWH(
-        size.x * 0.6,
-        size.y * 0.3,
-        size.x * 0.3,
-        size.y * 0.4,
-      ),
-    ));
+    // Add radiation zones based on current screen
+    if (worldPosition.x == 2 && worldPosition.y == 1) {
+      // Radiation zone for fragment #2
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          150,  // fragment is at 200, so start 50 pixels before
+          150,  // fragment is at 200, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    } else if (worldPosition.x == 2 && worldPosition.y == 3) {
+      // Radiation zone for fragment #4
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          250,  // fragment is at 300, so start 50 pixels before
+          250,  // fragment is at 300, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    } else if (worldPosition.x == 1 && worldPosition.y == 1) {
+      // Radiation zone for fragment #6
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          150,  // fragment is at 200, so start 50 pixels before
+          350,  // fragment is at 400, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    }
     
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
@@ -285,11 +331,47 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
       fragment.removeFromParent();
     }
     
+    // Remove existing radiation zones
+    children.whereType<RadiationZone>().forEach((zone) => zone.removeFromParent());
+    
     // Update world position based on direction
     worldPosition = nextPosition;
     worldManager.moveToScreen(worldPosition);
     uiOverlay.updatePosition(worldPosition);
     uiOverlay.addDiscoveredScreen(worldPosition);
+
+    // Add radiation zones based on current screen
+    if (worldPosition.x == 2 && worldPosition.y == 1) {
+      // Radiation zone for fragment #2
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          150,  // fragment is at 200, so start 50 pixels before
+          150,  // fragment is at 200, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    } else if (worldPosition.x == 2 && worldPosition.y == 3) {
+      // Radiation zone for fragment #4
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          250,  // fragment is at 300, so start 50 pixels before
+          250,  // fragment is at 300, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    } else if (worldPosition.x == 1 && worldPosition.y == 1) {
+      // Radiation zone for fragment #6
+      add(RadiationZone(
+        bounds: Rect.fromLTWH(
+          150,  // fragment is at 200, so start 50 pixels before
+          350,  // fragment is at 400, so start 50 pixels before
+          100,  // 100 pixels wide
+          100,  // 100 pixels tall
+        ),
+      ));
+    }
   }
 
   void resetPlayerPosition(Vector2 newPosition) {

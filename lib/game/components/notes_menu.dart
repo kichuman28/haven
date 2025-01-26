@@ -188,11 +188,35 @@ class NotesMenu extends Component with HasGameRef, KeyboardHandler {
       ),
     );
 
+    // Set up clipping for the notes area
+    canvas.save();
+    final notesClipRect = Rect.fromLTWH(
+      menuX + 20,
+      menuY + 80,
+      menuWidth - 40,
+      menuHeight - 140, // Leave space for title and instructions
+    );
+    canvas.clipRect(notesClipRect);
+
     // Draw collected notes
     double yOffset = menuY + 80;
     final collectedNotes = List.generate(memoryManager.totalFragments, (index) => index + 1)
       .where((id) => memoryManager.hasCollectedFragment(id))
       .toList();
+
+    // Calculate total content height
+    final totalContentHeight = collectedNotes.length * 120.0;
+    final visibleHeight = menuHeight - 140;
+
+    // Calculate scroll position based on selected index
+    if (selectedIndex >= 0 && collectedNotes.isNotEmpty) {
+      final targetY = selectedIndex * 120.0;
+      final maxScroll = totalContentHeight - visibleHeight;
+      if (maxScroll > 0) {
+        final scrollOffset = (targetY - visibleHeight / 2).clamp(0.0, maxScroll);
+        yOffset -= scrollOffset;
+      }
+    }
 
     for (var i = 0; i < collectedNotes.length; i++) {
       final fragmentId = collectedNotes[i];
@@ -279,6 +303,9 @@ class NotesMenu extends Component with HasGameRef, KeyboardHandler {
 
       yOffset += 120;
     }
+
+    // Restore clipping
+    canvas.restore();
 
     // Draw navigation instructions
     final instructionsPainter = TextPainter(

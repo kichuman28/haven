@@ -43,9 +43,11 @@ class WerewolfEnemy extends PositionComponent with CollisionCallbacks, HasGameRe
   @override
   void update(double dt) {
     super.update(dt);
-    
     if (!isActive) return;
 
+    // Don't update if dialog is active
+    if (gameRef.memoryManager.activeDialog != null) return;
+    
     // Get direction to player
     final playerPosition = gameRef.player.position + gameRef.player.size / 2;
     final toPlayer = playerPosition - (position + size / 2);

@@ -238,7 +238,12 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Check if this is a screen that should have a health orb
     bool isHealthOrbScreen = (worldPosition.x == 2 && worldPosition.y == 4) ||  // End room
                             (worldPosition.x == 0 && worldPosition.y == 2) ||  // Starting area
-                            (worldPosition.x == 2 && worldPosition.y == 2);    // Middle of right section
+                            (worldPosition.x == 2 && worldPosition.y == 2) ||  // Middle of right section
+                            (worldPosition.x == 0 && worldPosition.y == 4) ||  // (0,4)
+                            (worldPosition.x == 2 && worldPosition.y == 0) ||  // (2,0)
+                            (worldPosition.x == 1 && worldPosition.y == 1) ||  // (1,1)
+                            (worldPosition.x == 1 && worldPosition.y == 3) ||  // New: (1,3)
+                            (worldPosition.x == 2 && worldPosition.y == 3);    // New: (2,3)
 
     if (isHealthOrbScreen) {
       final random = math.Random();

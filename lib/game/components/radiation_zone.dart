@@ -18,24 +18,16 @@ class RadiationZone extends Component with HasGameRef<HavenGame> {
   void update(double dt) {
     super.update(dt);
     
+    // Don't update if dialog is active
+    if (gameRef.memoryManager.activeDialog != null) return;
+
     // Update pulse animation
     _pulsePhase = (_pulsePhase + dt * pulseSpeed) % (2 * math.pi);
     
     // Check if player is in radiation zone
-    final playerBounds = Rect.fromCenter(
-      center: gameRef.player.position.toOffset(),
-      width: 30,
-      height: 30,
-    );
-    
-    if (bounds.overlaps(playerBounds)) {
-      // Get the player component
-      final player = gameRef.player;
-      
-      // Only damage if shield is not active or if in cooldown
-      if (!player.isShieldActive) {
-        gameRef.healthBar.damage(HealthBar.drainRate * dt);
-      }
+    if (bounds.contains(gameRef.player.position.toOffset())) {
+      // Apply radiation damage
+      gameRef.healthBar.damage(HealthBar.drainRate * dt);
     }
   }
 

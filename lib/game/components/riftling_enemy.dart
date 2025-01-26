@@ -41,6 +41,9 @@ class RiftlingEnemy extends PositionComponent with CollisionCallbacks, HasGameRe
     super.update(dt);
     if (!isActive) return;
 
+    // Don't update if dialog is active
+    if (gameRef.memoryManager.activeDialog != null) return;
+
     // Move towards player
     final playerPos = gameRef.player.position;
     final direction = playerPos - position;

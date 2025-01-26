@@ -143,6 +143,10 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Reset end screen
     endScreen.hide();
     
+    // Update UI overlay with new position
+    uiOverlay.updatePosition(worldPosition);
+    worldManager.moveToScreen(worldPosition);
+    
     // Add radiation zones based on current screen
     if (worldPosition.x == 2 && worldPosition.y == 1) {
       add(RadiationZone(bounds: Rect.fromLTWH(150, 150, 100, 100)));

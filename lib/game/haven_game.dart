@@ -45,16 +45,37 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   @override
   Color backgroundColor() => Colors.black;
 
+  String _getBackgroundForPosition(int y) {
+    switch (y) {
+      case 0:
+        return 'castle.png';
+      case 1:
+        return 'dead_forest.png';
+      case 2:
+        return 'terrace.png';
+      case 3:
+        return 'castle.png';
+      case 4:
+        return 'throne_room.png';
+      default:
+        return 'castle.png';
+    }
+  }
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    // Load all background sprites
+    // Load all unique background sprites
     try {
-      for (int x = 0; x <= 2; x++) {
-        for (int y = 0; y <= 4; y++) {
-          final spriteName = 'background_${x}_$y.png';
-          backgroundSprites['$x,$y'] = await loadSprite(spriteName);
-        }
+      final uniqueBackgrounds = {
+        'castle.png',
+        'dead_forest.png',
+        'terrace.png',
+        'throne_room.png'
+      };
+      
+      for (final bgName in uniqueBackgrounds) {
+        backgroundSprites[bgName] = await loadSprite(bgName);
       }
     } catch (e) {
       print('Failed to load backgrounds: $e');
@@ -459,9 +480,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   @override
   void render(Canvas canvas) {
     // Draw background for current screen
-    final key = '${worldPosition.x.toInt()},${worldPosition.y.toInt()}';
-    if (backgroundSprites.containsKey(key)) {
-      backgroundSprites[key]!.render(
+    final bgName = _getBackgroundForPosition(worldPosition.y.toInt());
+    if (backgroundSprites.containsKey(bgName)) {
+      backgroundSprites[bgName]!.render(
         canvas,
         position: Vector2.zero(),
         size: size,

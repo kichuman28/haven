@@ -63,6 +63,10 @@ flutter:
     - assets/images/
     - assets/images/walk.png
     - assets/images/riftling.png
+    - assets/images/castle.png
+    - assets/images/dead_forest.png
+    - assets/images/terrace.png
+    - assets/images/throne_room.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

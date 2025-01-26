@@ -181,6 +181,13 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
                             (worldPosition.x == 2 && worldPosition.y == 3) ||  // Fragment #4
                             (worldPosition.x == 1 && worldPosition.y == 1);    // Fragment #6
 
+    // Check if this is a screen that should not have werewolves
+    bool isNoWerewolfScreen = (worldPosition.x == 2 && worldPosition.y == 0) ||  // (2,0)
+                             (worldPosition.x == 1 && worldPosition.y == 2) ||  // (1,2)
+                             (worldPosition.x == 1 && worldPosition.y == 4) ||  // (1,4)
+                             worldPosition == Vector2(2, 4) ||  // End room
+                             worldPosition == Vector2.zero();   // Starting screen
+
     final random = math.Random();
     
     if (isRadiationScreen) {
@@ -194,7 +201,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         );
         add(riftling);
       }
-    } else if (!isRadiationScreen && worldPosition != Vector2(2, 4) && worldPosition != Vector2.zero()) {  // Don't spawn in ending room or starting screen
+    } else if (!isRadiationScreen && !isNoWerewolfScreen) {  // Only spawn werewolves in allowed screens
       // Spawn Werewolves in non-radiation zones
       for (int i = 0; i < 2; i++) {  // Spawn fewer werewolves as they're tougher
         final werewolf = WerewolfEnemy(

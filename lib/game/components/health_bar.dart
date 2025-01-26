@@ -13,6 +13,10 @@ class HealthBar extends Component with HasGameRef<HavenGame> {
   
   double get health => _health;
   
+  bool get isDead => _health <= 0;
+
+  bool get isFullHealth => _health >= 100.0;
+
   void damage(double amount) {
     _health = (_health - amount).clamp(0.0, 100.0);
   }
@@ -25,8 +29,6 @@ class HealthBar extends Component with HasGameRef<HavenGame> {
     _health = 100.0;
     _displayHealth = 100.0;
   }
-  
-  bool get isDead => _health <= 0;
 
   @override
   void update(double dt) {

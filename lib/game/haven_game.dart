@@ -18,6 +18,7 @@ import 'components/riftling_enemy.dart';
 import 'components/werewolf_enemy.dart';
 import 'components/tutorial_hint.dart';
 import 'components/memory_dialog.dart';
+import 'components/health_orb.dart';
 import 'dart:math' as math;
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
@@ -114,6 +115,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
+
+    // Spawn health orb for the current screen
+    spawnHealthOrbForScreen();
   }
 
   void resetGame() {
@@ -132,6 +136,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     children.whereType<MemoryFragment>().forEach((component) => component.removeFromParent());
     children.whereType<RiftlingEnemy>().forEach((component) => component.removeFromParent());
     children.whereType<WerewolfEnemy>().forEach((component) => component.removeFromParent());
+    children.whereType<HealthOrb>().forEach((component) => component.removeFromParent());
     
     // Reset player position
     player.position = Vector2(size.x / 2, size.y / 2);
@@ -161,6 +166,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     
     // Spawn initial fragments
     memoryManager.spawnFragmentsForScreen('${worldPosition.x},${worldPosition.y}');
+
+    // Spawn health orb for the starting screen
+    spawnHealthOrbForScreen();
   }
 
   void spawnEnemiesForScreen() {
@@ -197,6 +205,27 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         );
         add(werewolf);
       }
+    }
+  }
+
+  void spawnHealthOrbForScreen() {
+    // Remove any existing health orbs
+    children.whereType<HealthOrb>().forEach((orb) => orb.removeFromParent());
+
+    // Check if this is a screen that should have a health orb
+    bool isHealthOrbScreen = (worldPosition.x == 2 && worldPosition.y == 4) ||  // End room
+                            (worldPosition.x == 0 && worldPosition.y == 2) ||  // Starting area
+                            (worldPosition.x == 2 && worldPosition.y == 2);    // Middle of right section
+
+    if (isHealthOrbScreen) {
+      final random = math.Random();
+      final healthOrb = HealthOrb(
+        position: Vector2(
+          100 + random.nextDouble() * (size.x - 200),
+          100 + random.nextDouble() * (size.y - 200),
+        ),
+      );
+      add(healthOrb);
     }
   }
 
@@ -352,6 +381,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     children.whereType<RiftlingEnemy>().forEach((enemy) => enemy.removeFromParent());
     children.whereType<WerewolfEnemy>().forEach((enemy) => enemy.removeFromParent());
     children.whereType<TutorialHint>().forEach((hint) => hint.removeFromParent());
+    children.whereType<HealthOrb>().forEach((orb) => orb.removeFromParent());
     
     // Update world position based on direction
     worldPosition = nextPosition;
@@ -380,6 +410,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
     // Spawn enemies for the new screen
     spawnEnemiesForScreen();
+
+    // Spawn health orb for the new screen
+    spawnHealthOrbForScreen();
   }
 
   void resetPlayerPosition(Vector2 newPosition) {

@@ -3,6 +3,7 @@ import 'package:flame/game.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'player.dart';
 import 'ui_overlay.dart';
 import 'managers/memory_manager.dart';

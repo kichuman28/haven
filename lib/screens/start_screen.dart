@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'intro_sequence.dart';
 
-class StartScreen extends StatelessWidget {
+class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
+
+  @override
+  State<StartScreen> createState() => _StartScreenState();
+}
+
+class _StartScreenState extends State<StartScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _initAudio();
+  }
+
+  Future<void> _initAudio() async {
+    await FlameAudio.audioCache.load('bg_music.mp3');
+    FlameAudio.bgm.play('bg_music.mp3', volume: 0.5);
+  }
 
   @override
   Widget build(BuildContext context) {

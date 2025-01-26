@@ -17,7 +17,6 @@ class EndingSequence extends Component with HasGameRef {
   static const double particleSize = 5.0;
   static const int maxParticles = 50;
   static const double fadeInDuration = 2.0;
-  static const double memoryDisplayDuration = 4.0;
   static const double drWintersFadeInDuration = 3.0;
   static const double dialogueDuration = 5.0;
   static const double finalFadeDuration = 3.0;
@@ -79,30 +78,22 @@ class EndingSequence extends Component with HasGameRef {
         }
         break;
 
-      case 1: // Display memories
-        final memoryIndex = (elapsedTime / memoryDisplayDuration).floor();
-        if (memoryIndex >= memoryManager.totalFragments) {
+      case 1: // Dr. Winters appears
+        drWintersAlpha = (elapsedTime / drWintersFadeInDuration).clamp(0, 1);
+        if (elapsedTime >= drWintersFadeInDuration) {
           currentStep = 2;
           elapsedTime = 0;
         }
         break;
 
-      case 2: // Dr. Winters appears
-        drWintersAlpha = (elapsedTime / drWintersFadeInDuration).clamp(0, 1);
-        if (elapsedTime >= drWintersFadeInDuration) {
+      case 2: // Final dialogue
+        if (elapsedTime >= dialogueDuration * finalDialogue.length) {
           currentStep = 3;
           elapsedTime = 0;
         }
         break;
 
-      case 3: // Final dialogue
-        if (elapsedTime >= dialogueDuration * finalDialogue.length) {
-          currentStep = 4;
-          elapsedTime = 0;
-        }
-        break;
-
-      case 4: // Final fade to black
+      case 3: // Final fade to black
         fadeAlpha = (elapsedTime / finalFadeDuration).clamp(0, 1);
         if (elapsedTime >= finalFadeDuration) {
           isActive = false;
@@ -133,22 +124,13 @@ class EndingSequence extends Component with HasGameRef {
       );
     }
 
-    // Draw memory text if in memory display phase
-    if (currentStep == 1) {
-      final memoryIndex = (elapsedTime / memoryDisplayDuration).floor();
-      if (memoryIndex < memoryManager.totalFragments) {
-        final memory = memoryManager.fragmentData[memoryIndex];
-        _drawMemoryText(canvas, memory['message'], memory['sender']);
-      }
-    }
-
     // Draw Dr. Winters if in appearance phase or dialogue phase
-    if (currentStep >= 2) {
+    if (currentStep >= 1) {
       _drawDrWinters(canvas);
     }
 
     // Draw final dialogue
-    if (currentStep == 3) {
+    if (currentStep == 2) {
       final dialogueIndex = (elapsedTime / dialogueDuration).floor();
       if (dialogueIndex < finalDialogue.length) {
         _drawDialogue(canvas, finalDialogue[dialogueIndex]);
@@ -156,7 +138,7 @@ class EndingSequence extends Component with HasGameRef {
     }
 
     // Draw final fade to black
-    if (currentStep == 4) {
+    if (currentStep == 3) {
       canvas.drawRect(
         Rect.fromLTWH(0, 0, gameRef.size.x, gameRef.size.y),
         Paint()..color = Colors.black.withOpacity(fadeAlpha),
@@ -199,44 +181,6 @@ class EndingSequence extends Component with HasGameRef {
       Paint()
         ..color = Colors.blue.withOpacity(0.2 * drWintersAlpha)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
-    );
-  }
-
-  void _drawMemoryText(Canvas canvas, String message, String sender) {
-    final textStyle = TextStyle(
-      color: Colors.white.withOpacity(fadeAlpha),
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    );
-
-    // Draw sender
-    final senderPainter = TextPainter(
-      text: TextSpan(text: sender, style: textStyle),
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
-    senderPainter.layout(maxWidth: gameRef.size.x * 0.8);
-    senderPainter.paint(
-      canvas,
-      Offset(
-        (gameRef.size.x - senderPainter.width) / 2,
-        gameRef.size.y * 0.3,
-      ),
-    );
-
-    // Draw message
-    final messagePainter = TextPainter(
-      text: TextSpan(text: message, style: textStyle.copyWith(fontSize: 16)),
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
-    messagePainter.layout(maxWidth: gameRef.size.x * 0.8);
-    messagePainter.paint(
-      canvas,
-      Offset(
-        (gameRef.size.x - messagePainter.width) / 2,
-        gameRef.size.y * 0.4,
-      ),
     );
   }
 

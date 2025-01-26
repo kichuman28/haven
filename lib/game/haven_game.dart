@@ -4,7 +4,6 @@ import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'player.dart';
-import 'world_manager.dart';
 import 'ui_overlay.dart';
 import 'managers/memory_manager.dart';
 import 'components/memory_fragment.dart';
@@ -24,7 +23,6 @@ import 'dart:math' as math;
 
 class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final Player player;
-  late final WorldManager worldManager;
   late final UIOverlay uiOverlay;
   late final MemoryManager memoryManager;
   late final FragmentProgress fragmentProgress;
@@ -32,6 +30,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late final EndScreen endScreen;
   late final NotesMenu notesMenu;
   late final HealthBar healthBar;
+  Map<String, Sprite> backgroundSprites = {};
   
   // World position tracking
   Vector2 worldPosition = Vector2.zero();
@@ -44,19 +43,27 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   static const transitionDuration = 0.5; // seconds
   
   @override
-  Color backgroundColor() => const Color(0xFF0A0A0A);
+  Color backgroundColor() => Colors.black;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    // Load all background sprites
+    try {
+      for (int x = 0; x <= 2; x++) {
+        for (int y = 0; y <= 4; y++) {
+          final spriteName = 'background_${x}_$y.png';
+          backgroundSprites['$x,$y'] = await loadSprite(spriteName);
+        }
+      }
+    } catch (e) {
+      print('Failed to load backgrounds: $e');
+    }
     await loadGame();
   }
 
   Future<void> loadGame() async {
     // Initialize managers
-    worldManager = WorldManager();
-    add(worldManager);
-    
     memoryManager = MemoryManager();
     add(memoryManager);
     
@@ -152,7 +159,6 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     
     // Update UI overlay with new position
     uiOverlay.updatePosition(worldPosition);
-    worldManager.moveToScreen(worldPosition);
     
     // Add radiation zones based on current screen
     if (worldPosition.x == 2 && worldPosition.y == 1) {
@@ -378,7 +384,9 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     
     // Check if the next screen would be within bounds
     final nextPosition = worldPosition + direction;
-    if (!worldManager.isValidPosition(nextPosition)) {
+    // Check world boundaries (3x5 grid)
+    if (nextPosition.x < 0 || nextPosition.x > 2 || 
+        nextPosition.y < 0 || nextPosition.y > 4) {
       // If not valid, just reset player position away from the boundary
       if (player.position.x < 0) {
         player.position.x = 0;
@@ -414,7 +422,6 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     
     // Update world position based on direction
     worldPosition = nextPosition;
-    worldManager.moveToScreen(worldPosition);
     uiOverlay.updatePosition(worldPosition);
     uiOverlay.addDiscoveredScreen(worldPosition);
 
@@ -451,6 +458,16 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
   @override
   void render(Canvas canvas) {
+    // Draw background for current screen
+    final key = '${worldPosition.x.toInt()},${worldPosition.y.toInt()}';
+    if (backgroundSprites.containsKey(key)) {
+      backgroundSprites[key]!.render(
+        canvas,
+        position: Vector2.zero(),
+        size: size,
+      );
+    }
+    
     super.render(canvas);
     
     // Draw transition overlay

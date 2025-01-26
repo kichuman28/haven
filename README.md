@@ -1,6 +1,5 @@
 # FRACTURE
 
-![Game Logo](assets/images/logo.png) *(Note: Add your game logo here if you have one)*
 
 A mysterious post-apocalyptic adventure game where you navigate through a shattered world, collecting memory fragments while avoiding dangerous enemies and radiation zones.
 

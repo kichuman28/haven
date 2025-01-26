@@ -16,6 +16,7 @@ import 'components/health_bar.dart';
 import 'components/radiation_zone.dart';
 import 'components/riftling_enemy.dart';
 import 'components/werewolf_enemy.dart';
+import 'components/ranged_enemy.dart';
 import 'components/tutorial_hint.dart';
 import 'components/memory_dialog.dart';
 import 'components/health_orb.dart';
@@ -136,6 +137,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     children.whereType<MemoryFragment>().forEach((component) => component.removeFromParent());
     children.whereType<RiftlingEnemy>().forEach((component) => component.removeFromParent());
     children.whereType<WerewolfEnemy>().forEach((component) => component.removeFromParent());
+    children.whereType<RangedEnemy>().forEach((component) => component.removeFromParent());
     children.whereType<HealthOrb>().forEach((component) => component.removeFromParent());
     
     // Reset player position
@@ -175,18 +177,21 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     // Remove any existing enemies
     children.whereType<RiftlingEnemy>().forEach((enemy) => enemy.removeFromParent());
     children.whereType<WerewolfEnemy>().forEach((enemy) => enemy.removeFromParent());
+    children.whereType<RangedEnemy>().forEach((enemy) => enemy.removeFromParent());
 
     // Check if this is a radiation zone screen
     bool isRadiationScreen = (worldPosition.x == 2 && worldPosition.y == 1) ||  // Fragment #2
                             (worldPosition.x == 2 && worldPosition.y == 3) ||  // Fragment #4
                             (worldPosition.x == 1 && worldPosition.y == 1);    // Fragment #6
 
-    // Check if this is a screen that should not have werewolves
-    bool isNoWerewolfScreen = (worldPosition.x == 2 && worldPosition.y == 0) ||  // (2,0)
-                             (worldPosition.x == 1 && worldPosition.y == 2) ||  // (1,2)
-                             (worldPosition.x == 1 && worldPosition.y == 4) ||  // (1,4)
-                             worldPosition == Vector2(2, 4) ||  // End room
-                             worldPosition == Vector2.zero();   // Starting screen
+    // Check if this is a screen that should have ranged enemies instead of werewolves
+    bool isRangedEnemyScreen = (worldPosition.x == 2 && worldPosition.y == 0) ||  // (2,0)
+                              (worldPosition.x == 1 && worldPosition.y == 2) ||  // (1,2)
+                              (worldPosition.x == 1 && worldPosition.y == 4);    // (1,4)
+
+    // Check if this is a screen that should not have any enemies
+    bool isNoEnemyScreen = worldPosition == Vector2(2, 4) ||  // End room
+                          worldPosition == Vector2.zero();   // Starting screen
 
     final random = math.Random();
     
@@ -201,9 +206,20 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         );
         add(riftling);
       }
-    } else if (!isRadiationScreen && !isNoWerewolfScreen) {  // Only spawn werewolves in allowed screens
-      // Spawn Werewolves in non-radiation zones
-      for (int i = 0; i < 2; i++) {  // Spawn fewer werewolves as they're tougher
+    } else if (isRangedEnemyScreen) {
+      // Spawn Ranged enemies in specific screens
+      for (int i = 0; i < 2; i++) {  // Spawn 2 ranged enemies per screen
+        final rangedEnemy = RangedEnemy(
+          position: Vector2(
+            50 + random.nextDouble() * (size.x - 100),
+            50 + random.nextDouble() * (size.y - 100),
+          ),
+        );
+        add(rangedEnemy);
+      }
+    } else if (!isRadiationScreen && !isRangedEnemyScreen && !isNoEnemyScreen) {  // Only spawn werewolves in remaining screens
+      // Spawn Werewolves in remaining screens
+      for (int i = 0; i < 2; i++) {
         final werewolf = WerewolfEnemy(
           position: Vector2(
             50 + random.nextDouble() * (size.x - 100),
@@ -387,6 +403,7 @@ class HavenGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
     children.whereType<RadiationZone>().forEach((zone) => zone.removeFromParent());
     children.whereType<RiftlingEnemy>().forEach((enemy) => enemy.removeFromParent());
     children.whereType<WerewolfEnemy>().forEach((enemy) => enemy.removeFromParent());
+    children.whereType<RangedEnemy>().forEach((enemy) => enemy.removeFromParent());
     children.whereType<TutorialHint>().forEach((hint) => hint.removeFromParent());
     children.whereType<HealthOrb>().forEach((orb) => orb.removeFromParent());
     

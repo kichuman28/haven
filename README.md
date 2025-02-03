@@ -59,29 +59,13 @@ A mysterious post-apocalyptic adventure game where you navigate through a shatte
 - Flame Engine: ^1.23.0
 - Flame Audio: ^2.10.0
 
-## 🎨 Assets Credits
+## Screenshots 
 
-- Background Music: [Credit your music source]
-- Character Sprites: [Credit your sprite sources]
-- Sound Effects: [Credit your SFX sources]
+![Screenshot 2025-01-26 170646](https://github.com/user-attachments/assets/cecbb459-f639-494c-8f40-6c35a5e61bf6)
+![Screenshot 2025-01-26 170630](https://github.com/user-attachments/assets/2acb9317-906b-44ee-989f-81ba43ef4992)
+![Screenshot 2025-01-26 170617](https://github.com/user-attachments/assets/ae5b42f0-19f1-4c70-8814-688edd145648)
+![Screenshot 2025-01-26 170608](https://github.com/user-attachments/assets/2cc90d75-acca-48fa-a779-feb09ec19229)
 
-## 🤝 Contributing
+https://github.com/user-attachments/assets/07be8711-ea0b-4f69-a195-a6b5c1828204
 
-Feel free to contribute to this project by:
-1. Forking the repository
-2. Creating a new branch
-3. Making your changes
-4. Submitting a pull request
 
-## 📝 License
-
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
-
-## 👥 Authors
-
-- [Your Name] - Initial work and development
-
-## 🙏 Acknowledgments
-
-- Thanks to the Flutter and Flame Engine communities
-- Special thanks to [mention any specific contributors or resources]

@@ -3,6 +3,18 @@
 
 A mysterious post-apocalyptic adventure game where you navigate through a shattered world, collecting memory fragments while avoiding dangerous enemies and radiation zones.
 
+
+## Screenshots 
+
+![Screenshot 2025-01-26 170608](https://github.com/user-attachments/assets/2cc90d75-acca-48fa-a779-feb09ec19229)
+![Screenshot 2025-01-26 170646](https://github.com/user-attachments/assets/cecbb459-f639-494c-8f40-6c35a5e61bf6)
+![Screenshot 2025-01-26 170630](https://github.com/user-attachments/assets/2acb9317-906b-44ee-989f-81ba43ef4992)
+![Screenshot 2025-01-26 170617](https://github.com/user-attachments/assets/ae5b42f0-19f1-4c70-8814-688edd145648)
+
+## Gameplay
+https://github.com/user-attachments/assets/07be8711-ea0b-4f69-a195-a6b5c1828204
+
+
 ## 🎮 Game Features
 
 - **Immersive Story**: Uncover the truth about your past by collecting memory fragments scattered throughout the world
@@ -59,13 +71,6 @@ A mysterious post-apocalyptic adventure game where you navigate through a shatte
 - Flame Engine: ^1.23.0
 - Flame Audio: ^2.10.0
 
-## Screenshots 
 
-![Screenshot 2025-01-26 170646](https://github.com/user-attachments/assets/cecbb459-f639-494c-8f40-6c35a5e61bf6)
-![Screenshot 2025-01-26 170630](https://github.com/user-attachments/assets/2acb9317-906b-44ee-989f-81ba43ef4992)
-![Screenshot 2025-01-26 170617](https://github.com/user-attachments/assets/ae5b42f0-19f1-4c70-8814-688edd145648)
-![Screenshot 2025-01-26 170608](https://github.com/user-attachments/assets/2cc90d75-acca-48fa-a779-feb09ec19229)
-
-https://github.com/user-attachments/assets/07be8711-ea0b-4f69-a195-a6b5c1828204
 
 
